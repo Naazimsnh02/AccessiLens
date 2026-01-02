@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AccessiLens</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 360px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 480px;
+    }
+
+    .popup-container {
+      background: white;
+      border-radius: 0;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .popup-header {
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-align: center;
+    }
+
+    .popup-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .popup-logo svg {
+      width: 32px;
+      height: 32px;
+      fill: white;
+    }
+
+    .popup-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .popup-subtitle {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: flex;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 12px 20px;
+      gap: 20px;
+    }
+
+    .stat-item {
+      flex: 1;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Content */
+    .popup-content {
+      padding: 20px;
+    }
+
+    .section {
+      margin-bottom: 20px;
+    }
+
+    .section:last-child {
+      margin-bottom: 0;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    /* Toggle Items */
+    .toggle-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .toggle-item:last-child {
+      border-bottom: none;
+    }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .toggle-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .toggle-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .toggle-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1e293b;
+    }
+
+    .toggle-desc {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    /* Switch */
+    .switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #cbd5e1;
+      transition: 0.3s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    input:checked + .slider {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .action-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 16px 10px;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 12px;
+      font-weight: 500;
+      color: #475569;
+    }
+
+    .action-btn:hover {
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .action-btn:active {
+      transform: translateY(0);
+    }
+
+    .action-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: #667eea;
+    }
+
+    /* API Status */
+    .api-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: #fef3c7;
+      border-radius: 10px;
+      font-size: 12px;
+      color: #92400e;
+    }
+
+    .api-status.connected {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .api-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #f59e0b;
+    }
+
+    .api-status.connected .api-status-dot {
+      background: #10b981;
+    }
+
+    /* Footer */
+    .popup-footer {
+      padding: 16px 20px;
+      background: #f8fafc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .settings-link {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .settings-link:hover {
+      text-decoration: underline;
+    }
+
+    .version {
+      color: #94a3b8;
+    }
+
+    /* Keyboard hint */
+    .kbd {
+      background: #e2e8f0;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 10px;
+      font-family: monospace;
+      color: #64748b;
+    }
+
+    .shortcut-hint {
+      text-align: center;
+      padding: 12px;
+      color: #64748b;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="popup-container">
+    <div class="popup-header">
+      <div class="popup-logo">
+        <svg viewBox="0 0 24 24"><path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z"/></svg>
+        <span class="popup-title">AccessiLens</span>
+      </div>
+      <div class="popup-subtitle">AI-Powered Accessibility Layer</div>
+      
+      <div class="stats-bar">
+        <div class="stat-item">
+          <div class="stat-value" id="pages-count">0</div>
+          <div class="stat-label">Pages</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="ai-count">0</div>
+          <div class="stat-label">AI Uses</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="time-saved">0</div>
+          <div class="stat-label">Min Saved</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="popup-content">
+      <div class="section">
+        <div class="section-title">Display Settings</div>
+        
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <div class="toggle-icon" style="background: linear-gradient(135deg, #fef3c7, #fcd34d);">📖</div>
+            <div class="toggle-info">
+              <span class="toggle-text">Dyslexia Font</span>
+              <span class="toggle-desc">OpenDyslexic with better spacing</span>
+            </div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="dyslexia-toggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <div class="toggle-icon" style="background: linear-gradient(135deg, #1e293b, #334155);">🌓</div>
+            <div class="toggle-info">
+              <span class="toggle-text">High Contrast</span>
+              <span class="toggle-desc">Black background, white text</span>
+            </div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="contrast-toggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <div class="toggle-icon" style="background: linear-gradient(135deg, #dbeafe, #93c5fd);">👁️</div>
+            <div class="toggle-info">
+              <span class="toggle-text">Reading Mode</span>
+              <span class="toggle-desc">Focus on main content</span>
+            </div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="reading-toggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Quick Actions</div>
+        <div class="action-buttons">
+          <button class="action-btn" id="simplify-btn">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+            Simplify Page
+          </button>
+          <button class="action-btn" id="speak-btn">
+            <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+            Read Aloud
+          </button>
+          <button class="action-btn" id="summarize-btn">
+            <svg viewBox="0 0 24 24"><path d="M12 2L9.19 7.53 3 8.51l4.5 4.37L6.38 19 12 16.1 17.62 19l-1.12-6.12L21 8.51l-6.19-.98L12 2z"/></svg>
+            Summarize
+          </button>
+          <button class="action-btn" id="stop-btn">
+            <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+            Stop Speech
+          </button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="api-status" id="api-status">
+          <span class="api-status-dot"></span>
+          <span id="api-status-text">Demo Mode - Add API key for AI features</span>
+        </div>
+      </div>
+
+      <div class="shortcut-hint">
+        Press <span class="kbd">Alt</span>+<span class="kbd">A</span> on any page to toggle panel
+      </div>
+    </div>
+
+    <div class="popup-footer">
+      <a href="#" class="settings-link" id="settings-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        Settings
+      </a>
+      <span class="version">v1.0.0</span>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

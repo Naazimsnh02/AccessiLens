@@ -1,0 +1,794 @@
+/*
+ * AccessiLens - Accessibility CSS
+ * All visual transformations for accessibility features
+ */
+
+/* ===========================================
+   FONTS
+   =========================================== */
+
+/* OpenDyslexic font - loaded from CDN */
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Bold.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ===========================================
+   DYSLEXIA-FRIENDLY MODE
+   =========================================== */
+
+body.accessilens-dyslexia,
+body.accessilens-dyslexia * {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif !important;
+  letter-spacing: 0.12em !important;
+  word-spacing: 0.16em !important;
+}
+
+body.accessilens-dyslexia p,
+body.accessilens-dyslexia li,
+body.accessilens-dyslexia span,
+body.accessilens-dyslexia div {
+  line-height: 1.8 !important;
+}
+
+body.accessilens-dyslexia h1,
+body.accessilens-dyslexia h2,
+body.accessilens-dyslexia h3,
+body.accessilens-dyslexia h4,
+body.accessilens-dyslexia h5,
+body.accessilens-dyslexia h6 {
+  letter-spacing: 0.05em !important;
+}
+
+/* ===========================================
+   HIGH CONTRAST MODE
+   =========================================== */
+
+body.accessilens-high-contrast {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+body.accessilens-high-contrast * {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+}
+
+body.accessilens-high-contrast a {
+  color: #ffff00 !important;
+  text-decoration: underline !important;
+}
+
+body.accessilens-high-contrast a:visited {
+  color: #ff00ff !important;
+}
+
+body.accessilens-high-contrast a:hover,
+body.accessilens-high-contrast a:focus {
+  color: #00ffff !important;
+  outline: 2px solid #00ffff !important;
+}
+
+body.accessilens-high-contrast button,
+body.accessilens-high-contrast input,
+body.accessilens-high-contrast select,
+body.accessilens-high-contrast textarea {
+  border: 2px solid #ffffff !important;
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+body.accessilens-high-contrast img {
+  filter: grayscale(100%) contrast(120%) !important;
+}
+
+/* Keep AccessiLens UI visible in high contrast */
+body.accessilens-high-contrast .accessilens-panel,
+body.accessilens-high-contrast .accessilens-panel *,
+body.accessilens-high-contrast .accessilens-fab,
+body.accessilens-high-contrast .accessilens-tooltip,
+body.accessilens-high-contrast .accessilens-tooltip * {
+  background-color: initial !important;
+  color: initial !important;
+  border-color: initial !important;
+}
+
+/* ===========================================
+   READING MODE
+   =========================================== */
+
+body.accessilens-reading-mode {
+  --accessilens-focus-opacity: 0.15;
+}
+
+body.accessilens-reading-mode header,
+body.accessilens-reading-mode footer,
+body.accessilens-reading-mode nav,
+body.accessilens-reading-mode aside,
+body.accessilens-reading-mode .sidebar,
+body.accessilens-reading-mode .navigation,
+body.accessilens-reading-mode .ads,
+body.accessilens-reading-mode .advertisement,
+body.accessilens-reading-mode [role="banner"],
+body.accessilens-reading-mode [role="navigation"],
+body.accessilens-reading-mode [role="complementary"] {
+  opacity: var(--accessilens-focus-opacity) !important;
+  transition: opacity 0.3s ease !important;
+}
+
+body.accessilens-reading-mode header:hover,
+body.accessilens-reading-mode footer:hover,
+body.accessilens-reading-mode nav:hover,
+body.accessilens-reading-mode aside:hover,
+body.accessilens-reading-mode .sidebar:hover,
+body.accessilens-reading-mode .navigation:hover {
+  opacity: 1 !important;
+}
+
+body.accessilens-reading-mode main,
+body.accessilens-reading-mode article,
+body.accessilens-reading-mode [role="main"],
+body.accessilens-reading-mode .content,
+body.accessilens-reading-mode .article-content {
+  max-width: 800px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding: 20px !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 8px !important;
+}
+
+/* ===========================================
+   READING RULER
+   =========================================== */
+
+.accessilens-reading-ruler {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 0, 0.2) 0%,
+    rgba(255, 255, 0, 0.3) 50%,
+    rgba(255, 255, 0, 0.2) 100%
+  );
+  pointer-events: none;
+  z-index: 999998;
+  border-top: 2px solid rgba(255, 200, 0, 0.5);
+  border-bottom: 2px solid rgba(255, 200, 0, 0.5);
+  transition: top 0.05s ease-out;
+  display: none;
+}
+
+body.accessilens-ruler-active .accessilens-reading-ruler {
+  display: block;
+}
+
+/* ===========================================
+   FLOATING ACTION BUTTON (FAB)
+   =========================================== */
+
+.accessilens-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: accessilens-pulse 2s infinite;
+}
+
+.accessilens-fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.accessilens-fab:active {
+  transform: scale(0.95);
+}
+
+.accessilens-fab svg {
+  width: 28px;
+  height: 28px;
+  fill: white;
+}
+
+@keyframes accessilens-pulse {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 25px rgba(102, 126, 234, 0.6);
+  }
+}
+
+/* ===========================================
+   CONTROL PANEL
+   =========================================== */
+
+.accessilens-panel {
+  position: fixed;
+  bottom: 90px;
+  right: 24px;
+  width: 320px;
+  max-height: 80vh;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.2);
+  z-index: 999999;
+  overflow: hidden;
+  transform: translateY(20px) scale(0.95);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.accessilens-panel.active {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  visibility: visible;
+}
+
+.accessilens-panel-header {
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.accessilens-panel-title {
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.accessilens-panel-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.accessilens-panel-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.accessilens-panel-close svg {
+  width: 16px;
+  height: 16px;
+  fill: white;
+}
+
+.accessilens-panel-content {
+  padding: 16px 20px;
+  overflow-y: auto;
+  max-height: calc(80vh - 60px);
+}
+
+.accessilens-section {
+  margin-bottom: 20px;
+}
+
+.accessilens-section:last-child {
+  margin-bottom: 0;
+}
+
+.accessilens-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+/* ===========================================
+   TOGGLE SWITCHES
+   =========================================== */
+
+.accessilens-toggle-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.accessilens-toggle-item:last-child {
+  border-bottom: none;
+}
+
+.accessilens-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.accessilens-toggle-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.accessilens-toggle-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.accessilens-toggle-switch {
+  position: relative;
+  width: 48px;
+  height: 26px;
+}
+
+.accessilens-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.accessilens-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  transition: 0.3s;
+  border-radius: 26px;
+}
+
+.accessilens-toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.accessilens-toggle-switch input:checked + .accessilens-toggle-slider {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.accessilens-toggle-switch input:checked + .accessilens-toggle-slider:before {
+  transform: translateX(22px);
+}
+
+/* ===========================================
+   ACTION BUTTONS
+   =========================================== */
+
+.accessilens-action-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.accessilens-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 10px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 12px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.accessilens-action-btn:hover {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+}
+
+.accessilens-action-btn:active {
+  transform: translateY(0);
+}
+
+.accessilens-action-btn svg {
+  width: 24px;
+  height: 24px;
+  fill: #667eea;
+}
+
+.accessilens-action-btn.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* ===========================================
+   SELECTION TOOLTIP
+   =========================================== */
+
+.accessilens-tooltip {
+  position: absolute;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 8px;
+  display: flex;
+  gap: 6px;
+  z-index: 999999;
+  transform: translateY(-10px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.accessilens-tooltip.active {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+}
+
+.accessilens-tooltip-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.accessilens-tooltip-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.accessilens-tooltip-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* ===========================================
+   AI RESPONSE MODAL
+   =========================================== */
+
+.accessilens-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.accessilens-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.accessilens-modal {
+  width: 90%;
+  max-width: 560px;
+  max-height: 80vh;
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  transform: scale(0.9) translateY(20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+}
+
+.accessilens-modal-overlay.active .accessilens-modal {
+  transform: scale(1) translateY(0);
+}
+
+.accessilens-modal-header {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.accessilens-modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.accessilens-modal-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.accessilens-modal-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.accessilens-modal-close svg {
+  width: 18px;
+  height: 18px;
+  fill: white;
+}
+
+.accessilens-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  max-height: calc(80vh - 140px);
+}
+
+.accessilens-original-text {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border-left: 4px solid #cbd5e1;
+}
+
+.accessilens-original-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.accessilens-original-content {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.accessilens-ai-response {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius: 12px;
+  padding: 16px;
+  border-left: 4px solid #667eea;
+}
+
+.accessilens-ai-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #667eea;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.accessilens-ai-content {
+  font-size: 15px;
+  color: #1e293b;
+  line-height: 1.7;
+}
+
+.accessilens-modal-footer {
+  padding: 16px 24px;
+  background: #f8fafc;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.accessilens-modal-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.accessilens-modal-btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+}
+
+.accessilens-modal-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.accessilens-modal-btn-secondary {
+  background: white;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.accessilens-modal-btn-secondary:hover {
+  background: #f8fafc;
+}
+
+/* ===========================================
+   LOADING SPINNER
+   =========================================== */
+
+.accessilens-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(102, 126, 234, 0.2);
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: accessilens-spin 0.8s linear infinite;
+}
+
+@keyframes accessilens-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.accessilens-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+/* ===========================================
+   KEYBOARD SHORTCUT HINTS
+   =========================================== */
+
+.accessilens-shortcut {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.accessilens-kbd {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-family: monospace;
+  color: #64748b;
+}
+
+/* ===========================================
+   SIMPLIFIED TEXT HIGHLIGHT
+   =========================================== */
+
+.accessilens-simplified {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-radius: 4px;
+  padding: 2px 4px;
+  border-bottom: 2px solid #667eea;
+}
+
+/* ===========================================
+   RESPONSIVE ADJUSTMENTS
+   =========================================== */
+
+@media (max-width: 400px) {
+  .accessilens-panel {
+    width: calc(100vw - 48px);
+    right: 24px;
+  }
+  
+  .accessilens-action-buttons {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===========================================
+   DARK MODE SUPPORT
+   =========================================== */
+
+@media (prefers-color-scheme: dark) {
+  .accessilens-panel {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
+  }
+  
+  .accessilens-toggle-item {
+    border-bottom-color: #334155;
+  }
+  
+  .accessilens-toggle-text {
+    color: #f1f5f9;
+  }
+  
+  .accessilens-section-title {
+    color: #94a3b8;
+  }
+  
+  .accessilens-action-btn {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-color: #334155;
+    color: #e2e8f0;
+  }
+  
+  .accessilens-action-btn:hover {
+    background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+  }
+}
+
+/* ===========================================
+   PRINT STYLES
+   =========================================== */
+
+@media print {
+  .accessilens-fab,
+  .accessilens-panel,
+  .accessilens-tooltip,
+  .accessilens-modal-overlay,
+  .accessilens-reading-ruler {
+    display: none !important;
+  }
+}

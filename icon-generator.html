@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>AccessiLens Icon Generator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            padding: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #667eea;
+        }
+
+        .icons {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 40px 0;
+        }
+
+        .icon-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        canvas {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .instructions {
+            background: #eff6ff;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            text-align: left;
+        }
+
+        .instructions h3 {
+            color: #1e40af;
+            margin-top: 0;
+        }
+
+        .instructions ol {
+            color: #3730a3;
+        }
+
+        a {
+            color: #667eea;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 AccessiLens Icon Generator</h1>
+
+    <div class="instructions">
+        <h3>📋 Instructions</h3>
+        <ol>
+            <li>The icons below are auto-generated</li>
+            <li>Click "Download" button under each icon</li>
+            <li>Save them as: <code>icon16.png</code>, <code>icon48.png</code>, <code>icon128.png</code></li>
+            <li>Move the files to the <code>icons/</code> folder in your extension</li>
+        </ol>
+    </div>
+
+    <div class="icons">
+        <div class="icon-container">
+            <canvas id="icon16" width="16" height="16"></canvas>
+            <span>16x16</span>
+            <button onclick="downloadIcon(16)">Download</button>
+        </div>
+        <div class="icon-container">
+            <canvas id="icon48" width="48" height="48"></canvas>
+            <span>48x48</span>
+            <button onclick="downloadIcon(48)">Download</button>
+        </div>
+        <div class="icon-container">
+            <canvas id="icon128" width="128" height="128"></canvas>
+            <span>128x128</span>
+            <button onclick="downloadIcon(128)">Download</button>
+        </div>
+    </div>
+
+    <script>
+        const sizes = [16, 48, 128];
+
+        function drawIcon(size) {
+            const canvas = document.getElementById(`icon${size}`);
+            const ctx = canvas.getContext('2d');
+
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+
+            // Draw rounded rectangle
+            const radius = size * 0.2;
+            ctx.beginPath();
+            ctx.moveTo(radius, 0);
+            ctx.lineTo(size - radius, 0);
+            ctx.quadraticCurveTo(size, 0, size, radius);
+            ctx.lineTo(size, size - radius);
+            ctx.quadraticCurveTo(size, size, size - radius, size);
+            ctx.lineTo(radius, size);
+            ctx.quadraticCurveTo(0, size, 0, size - radius);
+            ctx.lineTo(0, radius);
+            ctx.quadraticCurveTo(0, 0, radius, 0);
+            ctx.closePath();
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            // Draw accessibility symbol
+            ctx.fillStyle = 'white';
+
+            // Head
+            const headRadius = size * 0.12;
+            const headY = size * 0.25;
+            ctx.beginPath();
+            ctx.arc(size / 2, headY, headRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Arms line
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = Math.max(1, size * 0.08);
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(size * 0.2, size * 0.45);
+            ctx.lineTo(size * 0.8, size * 0.45);
+            ctx.stroke();
+
+            // Body
+            ctx.beginPath();
+            ctx.moveTo(size * 0.5, size * 0.38);
+            ctx.lineTo(size * 0.5, size * 0.65);
+            ctx.stroke();
+
+            // Legs
+            ctx.beginPath();
+            ctx.moveTo(size * 0.5, size * 0.65);
+            ctx.lineTo(size * 0.3, size * 0.85);
+            ctx.moveTo(size * 0.5, size * 0.65);
+            ctx.lineTo(size * 0.7, size * 0.85);
+            ctx.stroke();
+        }
+
+        function downloadIcon(size) {
+            const canvas = document.getElementById(`icon${size}`);
+            const link = document.createElement('a');
+            link.download = `icon${size}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Generate all icons on load
+        sizes.forEach(drawIcon);
+    </script>
+</body>
+
+</html>

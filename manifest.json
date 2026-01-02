@@ -1,0 +1,82 @@
+{
+    "manifest_version": 3,
+    "name": "AccessiLens - AI Accessibility Layer",
+    "version": "1.0.0",
+    "description": "Transform any educational website into an accessible learning experience with AI-powered adaptations",
+    "permissions": [
+        "activeTab",
+        "storage",
+        "scripting",
+        "tts"
+    ],
+    "host_permissions": [
+        "https://*/*",
+        "http://*/*"
+    ],
+    "background": {
+        "service_worker": "background.js",
+        "type": "module"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "css": [
+                "accessibility.css"
+            ],
+            "run_at": "document_end",
+            "all_frames": true
+        }
+    ],
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": {
+            "16": "icons/icon16.png",
+            "48": "icons/icon48.png",
+            "128": "icons/icon128.png"
+        },
+        "default_title": "AccessiLens - Click to open accessibility controls"
+    },
+    "icons": {
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
+    },
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "fonts/*",
+                "icons/*",
+                "config.js"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ],
+    "options_page": "options.html",
+    "commands": {
+        "toggle-panel": {
+            "suggested_key": {
+                "default": "Alt+A"
+            },
+            "description": "Toggle AccessiLens panel"
+        },
+        "simplify-selection": {
+            "suggested_key": {
+                "default": "Alt+S"
+            },
+            "description": "Simplify selected text"
+        },
+        "read-aloud": {
+            "suggested_key": {
+                "default": "Alt+R"
+            },
+            "description": "Read selected text aloud"
+        }
+    }
+}

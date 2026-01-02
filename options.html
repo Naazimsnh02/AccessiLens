@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AccessiLens Settings</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .logo svg {
+            width: 48px;
+            height: 48px;
+            fill: #667eea;
+        }
+
+        .logo-text {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 16px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 20px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .card-subtitle {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .label-hint {
+            font-weight: 400;
+            color: #64748b;
+            font-size: 12px;
+            display: block;
+            margin-top: 4px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group input {
+            padding-right: 48px;
+        }
+
+        .toggle-visibility {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #64748b;
+            padding: 4px;
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .preset-btn {
+            padding: 8px 16px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .preset-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .preset-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #475569;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .status {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-top: 16px;
+            display: none;
+        }
+
+        .status.success {
+            display: block;
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status.error {
+            display: block;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .info-box-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .info-box-content {
+            color: #3730a3;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .info-box code {
+            background: rgba(99, 102, 241, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z" />
+                </svg>
+                <span class="logo-text">AccessiLens</span>
+            </div>
+            <p class="subtitle">Configure your AI provider settings</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">🤖 AI Provider Configuration</div>
+                <div class="card-subtitle">Connect to any OpenAI-compatible API endpoint</div>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label>Quick Presets</label>
+                    <div class="preset-buttons">
+                        <button class="preset-btn" data-preset="nebius">Nebius</button>
+                        <button class="preset-btn" data-preset="openai">OpenAI</button>
+                        <button class="preset-btn" data-preset="openrouter">OpenRouter</button>
+                        <button class="preset-btn" data-preset="local">Local LLM</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        API Endpoint
+                        <span class="label-hint">The base URL for your AI provider</span>
+                    </label>
+                    <input type="text" id="api-endpoint" placeholder="https://api.tokenfactory.nebius.com/v1/">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        API Key
+                        <span class="label-hint">Your API key (stored locally only)</span>
+                    </label>
+                    <div class="input-group">
+                        <input type="password" id="api-key" placeholder="Enter your API key">
+                        <button class="toggle-visibility" onclick="toggleKeyVisibility()">👁️</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Model
+                        <span class="label-hint">The AI model to use for accessibility features</span>
+                    </label>
+                    <input type="text" id="model" placeholder="moonshotai/Kimi-K2-Instruct">
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="saveConfig()">💾 Save Configuration</button>
+                    <button class="btn btn-secondary" onclick="testConnection()">🔌 Test Connection</button>
+                </div>
+
+                <div class="status" id="status"></div>
+
+                <div class="info-box">
+                    <div class="info-box-title">💡 Getting an API Key</div>
+                    <div class="info-box-content">
+                        <strong>Nebius Token Factory:</strong> Visit <a href="https://nebius.com"
+                            target="_blank">nebius.com</a> to get a free API key<br><br>
+                        <strong>OpenAI:</strong> Get your key at <a href="https://platform.openai.com/api-keys"
+                            target="_blank">platform.openai.com/api-keys</a><br><br>
+                        <strong>Local LLM:</strong> Run Ollama or LM Studio locally at
+                        <code>http://localhost:11434/v1/</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">⚙️ Advanced Settings</div>
+                <div class="card-subtitle">Fine-tune AI behavior</div>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label>
+                        Max Tokens
+                        <span class="label-hint">Maximum length of AI responses (50-2000)</span>
+                    </label>
+                    <input type="text" id="max-tokens" placeholder="500">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Temperature
+                        <span class="label-hint">Creativity level: 0 = focused, 1 = creative</span>
+                    </label>
+                    <input type="text" id="temperature" placeholder="0.7">
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>AccessiLens v1.0.0 | <a href="https://github.com" target="_blank">View on GitHub</a></p>
+            <p style="margin-top: 8px;">Made with ❤️ for accessible education</p>
+        </div>
+    </div>
+
+    <script>
+        // Presets
+        const presets = {
+            nebius: {
+                endpoint: 'https://api.tokenfactory.nebius.com/v1/',
+                model: 'moonshotai/Kimi-K2-Instruct'
+            },
+            openai: {
+                endpoint: 'https://api.openai.com/v1/',
+                model: 'gpt-4o-mini'
+            },
+            openrouter: {
+                endpoint: 'https://openrouter.ai/api/v1/',
+                model: 'anthropic/claude-3-haiku'
+            },
+            local: {
+                endpoint: 'http://localhost:11434/v1/',
+                model: 'llama3'
+            }
+        };
+
+        // Load current config
+        chrome.storage.sync.get(['apiConfig'], (result) => {
+            if (result.apiConfig) {
+                document.getElementById('api-endpoint').value = result.apiConfig.API_ENDPOINT || '';
+                document.getElementById('api-key').value = result.apiConfig.API_KEY || '';
+                document.getElementById('model').value = result.apiConfig.MODEL || '';
+                document.getElementById('max-tokens').value = result.apiConfig.MAX_TOKENS || '500';
+                document.getElementById('temperature').value = result.apiConfig.TEMPERATURE || '0.7';
+            }
+        });
+
+        // Preset buttons
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const preset = presets[btn.dataset.preset];
+                if (preset) {
+                    document.getElementById('api-endpoint').value = preset.endpoint;
+                    document.getElementById('model').value = preset.model;
+
+                    // Update active state
+                    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                }
+            });
+        });
+
+        function toggleKeyVisibility() {
+            const input = document.getElementById('api-key');
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+        }
+
+        function saveConfig() {
+            const config = {
+                API_ENDPOINT: document.getElementById('api-endpoint').value,
+                API_KEY: document.getElementById('api-key').value,
+                MODEL: document.getElementById('model').value,
+                MAX_TOKENS: parseInt(document.getElementById('max-tokens').value) || 500,
+                TEMPERATURE: parseFloat(document.getElementById('temperature').value) || 0.7
+            };
+
+            chrome.storage.sync.set({ apiConfig: config }, () => {
+                chrome.runtime.sendMessage({ type: 'UPDATE_CONFIG', config }, () => {
+                    showStatus('✅ Configuration saved successfully!', 'success');
+                });
+            });
+        }
+
+        async function testConnection() {
+            showStatus('Testing connection...', 'info');
+
+            const endpoint = document.getElementById('api-endpoint').value;
+            const apiKey = document.getElementById('api-key').value;
+            const model = document.getElementById('model').value;
+
+            if (!endpoint || !apiKey) {
+                showStatus('❌ Please enter both endpoint and API key', 'error');
+                return;
+            }
+
+            try {
+                const url = endpoint.endsWith('/') ? endpoint + 'chat/completions' : endpoint + '/chat/completions';
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: [{ role: 'user', content: 'Say "Hello" in one word.' }],
+                        max_tokens: 10
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showStatus('✅ Connection successful! Response: ' + (data.choices?.[0]?.message?.content || 'OK'), 'success');
+                } else {
+                    const error = await response.json().catch(() => ({}));
+                    showStatus('❌ Error: ' + (error.error?.message || response.statusText), 'error');
+                }
+            } catch (error) {
+                showStatus('❌ Connection failed: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>
