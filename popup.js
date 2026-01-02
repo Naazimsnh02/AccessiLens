@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadStats();
     checkAPIStatus();
     setupEventListeners();
+    addProfileStyles();
 });
 
 // ===========================================
@@ -22,9 +23,23 @@ function loadSettings() {
     chrome.storage.sync.get(['settings'], (result) => {
         const settings = result.settings || {};
 
-        document.getElementById('dyslexia-toggle').checked = settings.dyslexia || false;
-        document.getElementById('contrast-toggle').checked = settings.highContrast || false;
-        document.getElementById('reading-toggle').checked = settings.readingMode || false;
+        // Display settings
+        const dyslexiaToggle = document.getElementById('dyslexia-toggle');
+        const contrastToggle = document.getElementById('contrast-toggle');
+        const readingToggle = document.getElementById('reading-toggle');
+
+        if (dyslexiaToggle) dyslexiaToggle.checked = settings.dyslexia || false;
+        if (contrastToggle) contrastToggle.checked = settings.highContrast || false;
+        if (readingToggle) readingToggle.checked = settings.readingMode || false;
+
+        // Motor support settings
+        const enlargedToggle = document.getElementById('enlarged-toggle');
+        const voiceToggle = document.getElementById('voice-toggle');
+        const motionToggle = document.getElementById('motion-toggle');
+
+        if (enlargedToggle) enlargedToggle.checked = settings.enlargedTargets || false;
+        if (voiceToggle) voiceToggle.checked = settings.voiceCommands || false;
+        if (motionToggle) motionToggle.checked = settings.reduceMotion || false;
     });
 }
 
@@ -66,42 +81,180 @@ function getProviderName(endpoint) {
 // ===========================================
 
 function setupEventListeners() {
-    // Toggle handlers
-    document.getElementById('dyslexia-toggle').addEventListener('change', (e) => {
-        toggleFeature('dyslexia', e.target.checked);
+    // Profile buttons
+    document.querySelectorAll('.profile-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            applyProfile(btn.dataset.profile);
+        });
     });
 
-    document.getElementById('contrast-toggle').addEventListener('change', (e) => {
-        toggleFeature('highContrast', e.target.checked);
-    });
+    // Display toggles
+    const dyslexiaToggle = document.getElementById('dyslexia-toggle');
+    const contrastToggle = document.getElementById('contrast-toggle');
+    const readingToggle = document.getElementById('reading-toggle');
 
-    document.getElementById('reading-toggle').addEventListener('change', (e) => {
-        toggleFeature('readingMode', e.target.checked);
-    });
+    if (dyslexiaToggle) {
+        dyslexiaToggle.addEventListener('change', (e) => {
+            toggleFeature('dyslexia', e.target.checked);
+        });
+    }
+
+    if (contrastToggle) {
+        contrastToggle.addEventListener('change', (e) => {
+            toggleFeature('highContrast', e.target.checked);
+        });
+    }
+
+    if (readingToggle) {
+        readingToggle.addEventListener('change', (e) => {
+            toggleFeature('readingMode', e.target.checked);
+        });
+    }
+
+    // Motor support toggles
+    const enlargedToggle = document.getElementById('enlarged-toggle');
+    const voiceToggle = document.getElementById('voice-toggle');
+    const motionToggle = document.getElementById('motion-toggle');
+
+    if (enlargedToggle) {
+        enlargedToggle.addEventListener('change', (e) => {
+            toggleFeature('enlargedTargets', e.target.checked);
+        });
+    }
+
+    if (voiceToggle) {
+        voiceToggle.addEventListener('change', (e) => {
+            toggleFeature('voiceCommands', e.target.checked);
+        });
+    }
+
+    if (motionToggle) {
+        motionToggle.addEventListener('change', (e) => {
+            toggleFeature('reduceMotion', e.target.checked);
+        });
+    }
 
     // Action buttons
-    document.getElementById('simplify-btn').addEventListener('click', () => {
-        sendCommand('simplifyPage');
-    });
+    const simplifyBtn = document.getElementById('simplify-btn');
+    const speakBtn = document.getElementById('speak-btn');
+    const summarizeBtn = document.getElementById('summarize-btn');
+    const scanBtn = document.getElementById('scan-btn');
 
-    document.getElementById('speak-btn').addEventListener('click', () => {
-        sendCommand('readAloud');
-    });
+    if (simplifyBtn) {
+        simplifyBtn.addEventListener('click', () => {
+            sendCommand('simplifyPage');
+        });
+    }
 
-    document.getElementById('summarize-btn').addEventListener('click', () => {
-        sendCommand('summarizePage');
-    });
+    if (speakBtn) {
+        speakBtn.addEventListener('click', () => {
+            sendCommand('readAloud');
+        });
+    }
 
-    document.getElementById('stop-btn').addEventListener('click', () => {
-        sendCommand('stopSpeech');
-    });
+    if (summarizeBtn) {
+        summarizeBtn.addEventListener('click', () => {
+            sendCommand('summarizePage');
+        });
+    }
+
+    if (scanBtn) {
+        scanBtn.addEventListener('click', () => {
+            sendCommand('scanContent');
+        });
+    }
 
     // Settings link
-    document.getElementById('settings-link').addEventListener('click', (e) => {
-        e.preventDefault();
-        // Open options page or config instructions
-        chrome.tabs.create({ url: 'options.html' });
+    const settingsLink = document.getElementById('settings-link');
+    if (settingsLink) {
+        settingsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            chrome.tabs.create({ url: 'options.html' });
+        });
+    }
+}
+
+// ===========================================
+// PROFILE MANAGEMENT
+// ===========================================
+
+const accessibilityProfiles = {
+    dyslexia: {
+        name: 'Dyslexia Friendly',
+        settings: {
+            dyslexia: true,
+            readingRuler: true,
+            readingMode: false,
+            highContrast: false,
+            enlargedTargets: false,
+            reduceMotion: false
+        }
+    },
+    lowVision: {
+        name: 'Low Vision',
+        settings: {
+            dyslexia: false,
+            readingRuler: false,
+            readingMode: true,
+            highContrast: true,
+            enlargedTargets: true,
+            reduceMotion: false
+        }
+    },
+    motorImpairment: {
+        name: 'Motor Support',
+        settings: {
+            dyslexia: false,
+            readingRuler: false,
+            readingMode: false,
+            highContrast: false,
+            enlargedTargets: true,
+            reduceMotion: true,
+            voiceCommands: true
+        }
+    },
+    cognitive: {
+        name: 'Cognitive Support',
+        settings: {
+            dyslexia: true,
+            readingRuler: true,
+            readingMode: true,
+            highContrast: false,
+            enlargedTargets: false,
+            reduceMotion: true
+        }
+    }
+};
+
+function applyProfile(profileName) {
+    const profile = accessibilityProfiles[profileName];
+    if (!profile) return;
+
+    // Apply all settings from profile
+    Object.entries(profile.settings).forEach(([feature, enabled]) => {
+        toggleFeature(feature, enabled);
     });
+
+    // Update UI toggles
+    loadSettings();
+
+    // Send to content script
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]) {
+            chrome.tabs.sendMessage(tabs[0].id, {
+                type: 'APPLY_PROFILE',
+                profile: profileName
+            }).catch(() => {
+                console.log('Could not reach content script');
+            });
+        }
+    });
+
+    // Visual feedback
+    document.querySelectorAll('.profile-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[data-profile="${profileName}"]`)?.classList.add('active');
 }
 
 // ===========================================
@@ -148,6 +301,47 @@ function sendCommand(command) {
 }
 
 // ===========================================
+// ADD STYLES FOR PROFILES
+// ===========================================
+
+function addProfileStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .profile-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        
+        .profile-btn {
+            padding: 10px 12px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .profile-btn:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+        }
+        
+        .profile-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// ===========================================
 // UTILITIES
 // ===========================================
 
@@ -157,3 +351,4 @@ function formatNumber(num) {
     }
     return num.toString();
 }
+

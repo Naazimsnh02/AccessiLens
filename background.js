@@ -42,7 +42,72 @@ Respond with ONLY the definition, formatted clearly.`,
 Content to summarize:
 {TEXT}
 
-Respond with ONLY the summary, no prefixes.`
+Respond with ONLY the summary, no prefixes.`,
+
+        // NEW: Quiz-specific simplification
+        simplifyQuiz: `You are an accessibility assistant helping students with learning disabilities understand quiz questions. Simplify the following quiz question while preserving its meaning and all answer options.
+
+Rules:
+- Keep the question format (multiple choice, true/false, etc.)
+- Simplify the language but don't change the correct answer
+- Keep all answer options but simplify their wording
+- Highlight key words that are important for answering
+
+Quiz Question:
+{TEXT}
+
+Respond with the simplified question and options, formatted clearly.`,
+
+        // NEW: Step-by-step breakdown
+        stepByStep: `You are an accessibility assistant. Break down this concept or problem into simple, numbered steps that a student with learning difficulties can follow.
+
+Content to break down:
+{TEXT}
+
+Respond with clear numbered steps, using simple language. Each step should be one simple action or idea.`,
+
+        // NEW: Visual content description
+        describeVisual: `You are an accessibility assistant. Provide a detailed but clear description of this visual content (chart, diagram, image) for someone who cannot see it or has difficulty processing visual information.
+
+Visual content description/context:
+{TEXT}
+
+Provide:
+1. What the visual shows overall
+2. Key elements and their relationships
+3. The main takeaway or message
+4. Any important data points or labels
+
+Use simple, clear language.`,
+
+        // NEW: Video transcript enhancement
+        enhanceTranscript: `You are an accessibility assistant. Improve this video transcript to make it more accessible and easier to follow for someone with learning difficulties.
+
+Original transcript:
+{TEXT}
+
+Improve by:
+1. Adding clear paragraph breaks
+2. Identifying speakers if multiple
+3. Adding descriptions of important visual elements [in brackets]
+4. Simplifying complex sentences
+5. Highlighting key terms
+
+Respond with the enhanced transcript.`,
+
+        // NEW: Interactive element guidance
+        interactionHelp: `You are an accessibility assistant. Explain how to use this interactive element (quiz, form, game, simulation) in simple step-by-step instructions.
+
+Interactive element description:
+{TEXT}
+
+Provide:
+1. What this element does
+2. How to interact with it (click, type, drag, etc.)
+3. What to expect when you interact
+4. Tips for completing it successfully
+
+Use simple, encouraging language suitable for someone who may be anxious about interactive content.`
     }
 };
 

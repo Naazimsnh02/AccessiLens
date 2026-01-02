@@ -4,7 +4,7 @@
 
 Transform any educational website into an accessible learning experience using AI-powered adaptations. Works on existing content without requiring publishers to change anything.
 
-![AccessiLens Demo](https://img.shields.io/badge/Version-1.0.0-blue) ![Chrome Extension](https://img.shields.io/badge/Platform-Chrome-green) ![License](https://img.shields.io/badge/License-MIT-yellow)
+![AccessiLens Demo](https://img.shields.io/badge/Version-2.0.0-blue) ![Chrome Extension](https://img.shields.io/badge/Platform-Chrome-green) ![License](https://img.shields.io/badge/License-MIT-yellow)
 
 ## ✨ Features
 
@@ -19,11 +19,31 @@ Transform any educational website into an accessible learning experience using A
 - **Concept Explanations** - Get instant explanations for difficult concepts
 - **Word Definitions** - Click any word for an accessible definition
 - **Page Summarization** - Generate bullet-point summaries
+- **Quiz Simplification** - Simplify quiz questions while preserving meaning
+- **Step-by-Step Breakdowns** - Break complex concepts into simple steps
+- **Visual Content Descriptions** - AI-generated descriptions for charts and diagrams
 
 ### 🔊 Text-to-Speech
 - Built-in speech synthesis
 - Read selected text or entire pages
 - No external service required
+
+### 🖐️ Motor Impairment Support
+- **Voice Commands** - Hands-free control with 20+ voice commands
+- **Enlarged Click Targets** - Bigger buttons and links for easier clicking
+- **Dwell-Click** - Hover over elements to click without pressing buttons
+- **Reduce Motion** - Pause all animations and transitions
+
+### 🎬 Interactive Content Support
+- **Quiz Detection** - Automatically finds and enhances quiz elements
+- **Video Controls** - Pause, slow down, and get transcripts from videos
+- **Animation Control** - Stop distracting animations instantly
+
+### 🎯 Quick Profiles
+- **Dyslexia** - Optimized for reading difficulties
+- **Low Vision** - High contrast and enlarged elements
+- **Motor Support** - Voice commands and enlarged targets
+- **Cognitive** - Reduced distractions and simplified content
 
 ## 🚀 Quick Start
 
