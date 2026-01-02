@@ -160,12 +160,10 @@ body.accessilens-reading-mode .article-content {
   left: 0;
   right: 0;
   height: 40px;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 0, 0.2) 0%,
-    rgba(255, 255, 0, 0.3) 50%,
-    rgba(255, 255, 0, 0.2) 100%
-  );
+  background: linear-gradient(to bottom,
+      rgba(255, 255, 0, 0.2) 0%,
+      rgba(255, 255, 0, 0.3) 50%,
+      rgba(255, 255, 0, 0.2) 100%);
   pointer-events: none;
   z-index: 999998;
   border-top: 2px solid rgba(255, 200, 0, 0.5);
@@ -217,9 +215,12 @@ body.accessilens-ruler-active .accessilens-reading-ruler {
 }
 
 @keyframes accessilens-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
   }
+
   50% {
     box-shadow: 0 4px 25px rgba(102, 126, 234, 0.6);
   }
@@ -392,11 +393,11 @@ body.accessilens-ruler-active .accessilens-reading-ruler {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.accessilens-toggle-switch input:checked + .accessilens-toggle-slider {
+.accessilens-toggle-switch input:checked+.accessilens-toggle-slider {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-.accessilens-toggle-switch input:checked + .accessilens-toggle-slider:before {
+.accessilens-toggle-switch input:checked+.accessilens-toggle-slider:before {
   transform: translateX(22px);
 }
 
@@ -527,14 +528,14 @@ body.accessilens-ruler-active .accessilens-reading-ruler {
 
 .accessilens-modal {
   width: 90%;
-  max-width: 560px;
-  max-height: 80vh;
+  max-width: 720px;
+  max-height: 85vh;
   background: white;
-  border-radius: 20px;
+  border-radius: 24px;
   overflow: hidden;
   transform: scale(0.9) translateY(20px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
 .accessilens-modal-overlay.active .accessilens-modal {
@@ -542,37 +543,40 @@ body.accessilens-ruler-active .accessilens-reading-ruler {
 }
 
 .accessilens-modal-header {
-  padding: 20px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 28px 32px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   color: white;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .accessilens-modal-title {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  letter-spacing: -0.02em;
 }
 
 .accessilens-modal-close {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
   border: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 
 .accessilens-modal-close:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
 }
 
 .accessilens-modal-close svg {
@@ -582,93 +586,150 @@ body.accessilens-ruler-active .accessilens-reading-ruler {
 }
 
 .accessilens-modal-body {
-  padding: 24px;
+  padding: 32px;
   overflow-y: auto;
-  max-height: calc(80vh - 140px);
+  max-height: calc(85vh - 180px);
+  background: #fafbfc;
 }
 
 .accessilens-original-text {
-  background: #f8fafc;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
-  border-left: 4px solid #cbd5e1;
+  background: white;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .accessilens-original-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
 }
 
 .accessilens-original-content {
-  font-size: 14px;
-  color: #475569;
-  line-height: 1.6;
+  font-size: 15px;
+  color: #374151;
+  line-height: 1.7;
+  font-weight: 400;
 }
 
 .accessilens-ai-response {
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  border-radius: 12px;
-  padding: 16px;
-  border-left: 4px solid #667eea;
+  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #e9d5ff;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.08);
 }
 
 .accessilens-ai-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #667eea;
+  font-size: 11px;
+  font-weight: 700;
+  color: #8b5cf6;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+
+.accessilens-ai-label svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  animation: accessilens-pulse-slow 3s ease-in-out infinite;
+}
+
+@keyframes accessilens-pulse-slow {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
 }
 
 .accessilens-ai-content {
-  font-size: 15px;
-  color: #1e293b;
-  line-height: 1.7;
+  font-size: 16px;
+  color: #1f2937;
+  line-height: 1.8;
+  font-weight: 400;
 }
 
 .accessilens-modal-footer {
-  padding: 16px 24px;
-  background: #f8fafc;
+  padding: 20px 32px;
+  background: white;
   display: flex;
   gap: 12px;
   justify-content: flex-end;
+  border-top: 1px solid #e5e7eb;
 }
 
 .accessilens-modal-btn {
-  padding: 10px 20px;
-  border-radius: 10px;
+  padding: 12px 24px;
+  border-radius: 12px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-}
-
-.accessilens-modal-btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   border: none;
 }
 
+.accessilens-modal-btn-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+}
+
 .accessilens-modal-btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35);
+}
+
+.accessilens-modal-btn-primary:active {
+  transform: translateY(0);
 }
 
 .accessilens-modal-btn-secondary {
-  background: white;
-  color: #475569;
-  border: 1px solid #e2e8f0;
+  background: #f9fafb;
+  color: #374151;
+  border: 1px solid #d1d5db;
 }
 
 .accessilens-modal-btn-secondary:hover {
-  background: #f8fafc;
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.accessilens-modal-btn-secondary:active {
+  background: #e5e7eb;
+}
+
+.accessilens-modal-btn-stop {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+.accessilens-modal-btn-stop:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
+}
+
+.accessilens-modal-btn-stop:active {
+  transform: translateY(0);
 }
 
 /* ===========================================
@@ -695,9 +756,10 @@ body.accessilens-ruler-active .accessilens-reading-ruler {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 20px;
-  color: #64748b;
-  font-size: 14px;
+  padding: 32px 20px;
+  color: #6b7280;
+  font-size: 15px;
+  font-weight: 500;
 }
 
 /* ===========================================
@@ -741,7 +803,7 @@ body.accessilens-ruler-active .accessilens-reading-ruler {
     width: calc(100vw - 48px);
     right: 24px;
   }
-  
+
   .accessilens-action-buttons {
     grid-template-columns: 1fr;
   }
@@ -755,25 +817,25 @@ body.accessilens-ruler-active .accessilens-reading-ruler {
   .accessilens-panel {
     background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
   }
-  
+
   .accessilens-toggle-item {
     border-bottom-color: #334155;
   }
-  
+
   .accessilens-toggle-text {
     color: #f1f5f9;
   }
-  
+
   .accessilens-section-title {
     color: #94a3b8;
   }
-  
+
   .accessilens-action-btn {
     background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
     border-color: #334155;
     color: #e2e8f0;
   }
-  
+
   .accessilens-action-btn:hover {
     background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
   }
@@ -784,6 +846,7 @@ body.accessilens-ruler-active .accessilens-reading-ruler {
    =========================================== */
 
 @media print {
+
   .accessilens-fab,
   .accessilens-panel,
   .accessilens-tooltip,
