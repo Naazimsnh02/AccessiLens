@@ -3,7 +3,7 @@
  * Handles API calls and message passing
  */
 
-// Import config (will be injected at runtime)
+// Default configuration
 let CONFIG = {
     API_KEY: 'YOUR_API_KEY_HERE',
     API_ENDPOINT: 'https://api.tokenfactory.nebius.com/v1/',
@@ -50,11 +50,22 @@ Respond with ONLY the summary, no prefixes.`
 const responseCache = new Map();
 
 // Load config from storage on startup
-chrome.storage.sync.get(['apiConfig'], (result) => {
-    if (result.apiConfig) {
-        CONFIG = { ...CONFIG, ...result.apiConfig };
+async function loadConfig() {
+    try {
+        // First try to load from storage
+        const result = await chrome.storage.sync.get(['apiConfig']);
+        if (result.apiConfig && result.apiConfig.API_KEY && result.apiConfig.API_KEY !== 'YOUR_API_KEY_HERE') {
+            CONFIG = { ...CONFIG, ...result.apiConfig };
+            console.log('AccessiLens: Loaded config from storage');
+        }
+        console.log('AccessiLens: Config loaded, API_KEY set:', CONFIG.API_KEY !== 'YOUR_API_KEY_HERE');
+    } catch (error) {
+        console.error('AccessiLens: Error loading config:', error);
     }
-});
+}
+
+// Initialize config on load
+loadConfig();
 
 // ===========================================
 // MESSAGE HANDLER
@@ -62,21 +73,42 @@ chrome.storage.sync.get(['apiConfig'], (result) => {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'AI_REQUEST') {
+        console.log('AccessiLens: AI_REQUEST received for action:', message.action);
+        console.log('AccessiLens: Using API endpoint:', CONFIG.API_ENDPOINT);
+        console.log('AccessiLens: API key configured:', CONFIG.API_KEY !== 'YOUR_API_KEY_HERE');
+
         handleAIRequest(message.action, message.text)
-            .then(result => sendResponse({ result }))
-            .catch(error => sendResponse({ error: error.message }));
+            .then(result => {
+                console.log('AccessiLens: AI request successful');
+                sendResponse({ result });
+            })
+            .catch(error => {
+                console.error('AccessiLens: AI request failed:', error);
+                sendResponse({ error: error.message });
+            });
         return true; // Keep channel open for async response
     }
 
     if (message.type === 'UPDATE_CONFIG') {
+        console.log('AccessiLens: Updating config...');
         CONFIG = { ...CONFIG, ...message.config };
-        chrome.storage.sync.set({ apiConfig: CONFIG });
+        chrome.storage.sync.set({ apiConfig: message.config }, () => {
+            console.log('AccessiLens: Config saved to storage');
+            console.log('AccessiLens: New API endpoint:', CONFIG.API_ENDPOINT);
+            console.log('AccessiLens: API key set:', CONFIG.API_KEY !== 'YOUR_API_KEY_HERE');
+        });
         sendResponse({ success: true });
         return true;
     }
 
     if (message.type === 'GET_CONFIG') {
-        sendResponse({ config: CONFIG });
+        // Reload config from storage before returning
+        chrome.storage.sync.get(['apiConfig'], (result) => {
+            if (result.apiConfig) {
+                CONFIG = { ...CONFIG, ...result.apiConfig };
+            }
+            sendResponse({ config: CONFIG });
+        });
         return true;
     }
 });
@@ -86,6 +118,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 // ===========================================
 
 async function handleAIRequest(action, text) {
+    // Reload config from storage to ensure we have latest
+    const result = await chrome.storage.sync.get(['apiConfig']);
+    if (result.apiConfig && result.apiConfig.API_KEY) {
+        CONFIG = { ...CONFIG, ...result.apiConfig };
+    }
+
+    console.log('AccessiLens: handleAIRequest called');
+    console.log('AccessiLens: Action:', action);
+    console.log('AccessiLens: API Key present:', CONFIG.API_KEY && CONFIG.API_KEY !== 'YOUR_API_KEY_HERE');
+
     // Check cache first
     if (CONFIG.ENABLE_CACHE) {
         const cacheKey = `${action}:${hashText(text)}`;
@@ -97,10 +139,12 @@ async function handleAIRequest(action, text) {
     }
 
     // Use mock responses if enabled or no API key
-    if (CONFIG.USE_MOCK_RESPONSES || CONFIG.API_KEY === 'YOUR_API_KEY_HERE') {
+    if (CONFIG.USE_MOCK_RESPONSES || !CONFIG.API_KEY || CONFIG.API_KEY === 'YOUR_API_KEY_HERE') {
+        console.log('AccessiLens: Using mock response (no valid API key)');
         return getMockResponse(action, text);
     }
 
+    console.log('AccessiLens: Calling real API...');
     // Call real API
     const response = await callOpenAICompatibleAPI(action, text);
 

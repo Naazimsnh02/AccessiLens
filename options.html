@@ -233,6 +233,12 @@
             color: #991b1b;
         }
 
+        .status.info {
+            display: block;
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
         .info-box {
             background: #eff6ff;
             border-radius: 10px;
@@ -321,7 +327,7 @@
                     </label>
                     <div class="input-group">
                         <input type="password" id="api-key" placeholder="Enter your API key">
-                        <button class="toggle-visibility" onclick="toggleKeyVisibility()">👁️</button>
+                        <button class="toggle-visibility" id="toggle-visibility">👁️</button>
                     </div>
                 </div>
 
@@ -334,8 +340,8 @@
                 </div>
 
                 <div class="btn-group">
-                    <button class="btn btn-primary" onclick="saveConfig()">💾 Save Configuration</button>
-                    <button class="btn btn-secondary" onclick="testConnection()">🔌 Test Connection</button>
+                    <button class="btn btn-primary" id="save-btn">💾 Save Configuration</button>
+                    <button class="btn btn-secondary" id="test-btn">🔌 Test Connection</button>
                 </div>
 
                 <div class="status" id="status"></div>
@@ -384,120 +390,123 @@
         </div>
     </div>
 
-    <script>
-        // Presets
-        const presets = {
-            nebius: {
-                endpoint: 'https://api.tokenfactory.nebius.com/v1/',
-                model: 'moonshotai/Kimi-K2-Instruct'
-            },
-            openai: {
-                endpoint: 'https://api.openai.com/v1/',
-                model: 'gpt-4o-mini'
-            },
-            openrouter: {
-                endpoint: 'https://openrouter.ai/api/v1/',
-                model: 'anthropic/claude-3-haiku'
-            },
-            local: {
-                endpoint: 'http://localhost:11434/v1/',
-                model: 'llama3'
-            }
-        };
+    <script src="options.js"></script>
+</body>
 
-        // Load current config
-        chrome.storage.sync.get(['apiConfig'], (result) => {
-            if (result.apiConfig) {
-                document.getElementById('api-endpoint').value = result.apiConfig.API_ENDPOINT || '';
-                document.getElementById('api-key').value = result.apiConfig.API_KEY || '';
-                document.getElementById('model').value = result.apiConfig.MODEL || '';
-                document.getElementById('max-tokens').value = result.apiConfig.MAX_TOKENS || '500';
-                document.getElementById('temperature').value = result.apiConfig.TEMPERATURE || '0.7';
-            }
-        });
+</html>
+// Presets
+const presets = {
+nebius: {
+endpoint: 'https://api.tokenfactory.nebius.com/v1/',
+model: 'moonshotai/Kimi-K2-Instruct'
+},
+openai: {
+endpoint: 'https://api.openai.com/v1/',
+model: 'gpt-4o-mini'
+},
+openrouter: {
+endpoint: 'https://openrouter.ai/api/v1/',
+model: 'anthropic/claude-3-haiku'
+},
+local: {
+endpoint: 'http://localhost:11434/v1/',
+model: 'llama3'
+}
+};
 
-        // Preset buttons
-        document.querySelectorAll('.preset-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const preset = presets[btn.dataset.preset];
-                if (preset) {
-                    document.getElementById('api-endpoint').value = preset.endpoint;
-                    document.getElementById('model').value = preset.model;
+// Load current config
+chrome.storage.sync.get(['apiConfig'], (result) => {
+if (result.apiConfig) {
+document.getElementById('api-endpoint').value = result.apiConfig.API_ENDPOINT || '';
+document.getElementById('api-key').value = result.apiConfig.API_KEY || '';
+document.getElementById('model').value = result.apiConfig.MODEL || '';
+document.getElementById('max-tokens').value = result.apiConfig.MAX_TOKENS || '500';
+document.getElementById('temperature').value = result.apiConfig.TEMPERATURE || '0.7';
+}
+});
 
-                    // Update active state
-                    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                }
-            });
-        });
+// Preset buttons
+document.querySelectorAll('.preset-btn').forEach(btn => {
+btn.addEventListener('click', () => {
+const preset = presets[btn.dataset.preset];
+if (preset) {
+document.getElementById('api-endpoint').value = preset.endpoint;
+document.getElementById('model').value = preset.model;
 
-        function toggleKeyVisibility() {
-            const input = document.getElementById('api-key');
-            input.type = input.type === 'password' ? 'text' : 'password';
-        }
+// Update active state
+document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+btn.classList.add('active');
+}
+});
+});
 
-        function showStatus(message, type) {
-            const status = document.getElementById('status');
-            status.textContent = message;
-            status.className = 'status ' + type;
-        }
+function toggleKeyVisibility() {
+const input = document.getElementById('api-key');
+input.type = input.type === 'password' ? 'text' : 'password';
+}
 
-        function saveConfig() {
-            const config = {
-                API_ENDPOINT: document.getElementById('api-endpoint').value,
-                API_KEY: document.getElementById('api-key').value,
-                MODEL: document.getElementById('model').value,
-                MAX_TOKENS: parseInt(document.getElementById('max-tokens').value) || 500,
-                TEMPERATURE: parseFloat(document.getElementById('temperature').value) || 0.7
-            };
+function showStatus(message, type) {
+const status = document.getElementById('status');
+status.textContent = message;
+status.className = 'status ' + type;
+}
 
-            chrome.storage.sync.set({ apiConfig: config }, () => {
-                chrome.runtime.sendMessage({ type: 'UPDATE_CONFIG', config }, () => {
-                    showStatus('✅ Configuration saved successfully!', 'success');
-                });
-            });
-        }
+function saveConfig() {
+const config = {
+API_ENDPOINT: document.getElementById('api-endpoint').value,
+API_KEY: document.getElementById('api-key').value,
+MODEL: document.getElementById('model').value,
+MAX_TOKENS: parseInt(document.getElementById('max-tokens').value) || 500,
+TEMPERATURE: parseFloat(document.getElementById('temperature').value) || 0.7
+};
 
-        async function testConnection() {
-            showStatus('Testing connection...', 'info');
+chrome.storage.sync.set({ apiConfig: config }, () => {
+chrome.runtime.sendMessage({ type: 'UPDATE_CONFIG', config }, () => {
+showStatus('✅ Configuration saved successfully!', 'success');
+});
+});
+}
 
-            const endpoint = document.getElementById('api-endpoint').value;
-            const apiKey = document.getElementById('api-key').value;
-            const model = document.getElementById('model').value;
+async function testConnection() {
+showStatus('Testing connection...', 'info');
 
-            if (!endpoint || !apiKey) {
-                showStatus('❌ Please enter both endpoint and API key', 'error');
-                return;
-            }
+const endpoint = document.getElementById('api-endpoint').value;
+const apiKey = document.getElementById('api-key').value;
+const model = document.getElementById('model').value;
 
-            try {
-                const url = endpoint.endsWith('/') ? endpoint + 'chat/completions' : endpoint + '/chat/completions';
+if (!endpoint || !apiKey) {
+showStatus('❌ Please enter both endpoint and API key', 'error');
+return;
+}
 
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`
-                    },
-                    body: JSON.stringify({
-                        model: model,
-                        messages: [{ role: 'user', content: 'Say "Hello" in one word.' }],
-                        max_tokens: 10
-                    })
-                });
+try {
+const url = endpoint.endsWith('/') ? endpoint + 'chat/completions' : endpoint + '/chat/completions';
 
-                if (response.ok) {
-                    const data = await response.json();
-                    showStatus('✅ Connection successful! Response: ' + (data.choices?.[0]?.message?.content || 'OK'), 'success');
-                } else {
-                    const error = await response.json().catch(() => ({}));
-                    showStatus('❌ Error: ' + (error.error?.message || response.statusText), 'error');
-                }
-            } catch (error) {
-                showStatus('❌ Connection failed: ' + error.message, 'error');
-            }
-        }
-    </script>
+const response = await fetch(url, {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'Authorization': `Bearer ${apiKey}`
+},
+body: JSON.stringify({
+model: model,
+messages: [{ role: 'user', content: 'Say "Hello" in one word.' }],
+max_tokens: 10
+})
+});
+
+if (response.ok) {
+const data = await response.json();
+showStatus('✅ Connection successful! Response: ' + (data.choices?.[0]?.message?.content || 'OK'), 'success');
+} else {
+const error = await response.json().catch(() => ({}));
+showStatus('❌ Error: ' + (error.error?.message || response.statusText), 'error');
+}
+} catch (error) {
+showStatus('❌ Connection failed: ' + error.message, 'error');
+}
+}
+</script>
 </body>
 
 </html>
