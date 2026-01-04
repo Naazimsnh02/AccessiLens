@@ -1,4 +1,4 @@
-# AccessiLens 🔍♿
+# AccessiLens 🔍
 
 **AI-Powered Accessibility Layer for Educational Websites**
 
@@ -279,15 +279,6 @@ No build step required! The extension runs directly from source.
 - Test your content's accessibility
 - See how AI interprets your diagrams and charts
 - Understand readability from various perspectives
-
-## 🤝 Contributing
-
-Contributions are welcome! Areas needing improvement:
-- Additional math notation support (more LaTeX patterns)
-- Better diagram analysis (integrate vision APIs)
-- More voice commands
-- Additional language support
-- Performance optimizations
 
 ## 📄 License
 
