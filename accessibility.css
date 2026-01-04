@@ -1082,6 +1082,7 @@ body.accessilens-reduce-motion [class*="animate"] {
    VIDEO CONTROLS
    =========================================== */
 
+/* We no longer use wrapper to avoid breaking video players */
 .accessilens-video-wrapper {
   position: relative;
   display: inline-block;
@@ -1093,12 +1094,15 @@ body.accessilens-reduce-motion [class*="animate"] {
   right: 8px;
   display: flex;
   gap: 6px;
-  z-index: 100;
-  opacity: 0;
+  z-index: 10000;
+  opacity: 0.7;
   transition: opacity 0.3s;
+  pointer-events: auto;
 }
 
-.accessilens-video-wrapper:hover .accessilens-video-controls {
+/* Show controls on hover of parent container */
+*:hover>.accessilens-video-controls,
+.accessilens-video-controls:hover {
   opacity: 1;
 }
 
@@ -1106,25 +1110,33 @@ body.accessilens-reduce-motion [class*="animate"] {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.7);
-  border: none;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   font-size: 16px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .accessilens-video-btn:hover {
-  background: rgba(102, 126, 234, 0.9);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: rgba(255, 255, 255, 0.5);
   transform: scale(1.1);
+}
+
+.accessilens-video-btn:active {
+  transform: scale(0.95);
 }
 
 .accessilens-video-detected {
   outline: 3px solid #667eea !important;
   outline-offset: 2px;
 }
+
 
 /* ===========================================
    USER PROFILES
@@ -1301,4 +1313,70 @@ body.accessilens-enhanced-focus *:focus-visible {
   .accessilens-voice-status {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   }
+}
+
+/* ===========================================
+   CONTENT DETECTION NOTIFICATION
+   =========================================== */
+
+.accessilens-content-notification {
+  position: fixed;
+  bottom: 90px;
+  left: 24px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(102, 126, 234, 0.2);
+  z-index: 999998;
+  animation: accessilens-slide-in 0.3s ease-out;
+  transition: opacity 0.3s ease;
+}
+
+@keyframes accessilens-slide-in {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.accessilens-notif-icon {
+  font-size: 24px;
+}
+
+.accessilens-notif-text {
+  font-size: 13px;
+  color: #1e293b;
+  line-height: 1.4;
+}
+
+.accessilens-notif-text strong {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 2px;
+  color: #667eea;
+}
+
+.accessilens-notif-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.accessilens-notif-close:hover {
+  color: #64748b;
 }

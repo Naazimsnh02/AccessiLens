@@ -641,6 +641,147 @@
   }
 
   // ===========================================
+  // CONTENT CLEANING UTILITIES FOR AI
+  // ===========================================
+
+  /**
+   * Clean text content for AI processing
+   * Removes HTML artifacts, normalizes whitespace, strips metadata
+   */
+  function cleanTextForAI(element) {
+    if (!element) return '';
+
+    let text = element.innerText || element.textContent || '';
+
+    // Remove question numbers and metadata
+    text = text.replace(/^(Question\s+\d+|Q\.?\s*\d+|#\d+|Chapter\s+\d+)[:\.\)]\s*/gmi, '');
+    text = text.replace(/^(\d+\.\s+|\(\d+\)\s+|\d+\)\s+)/gm, ''); // Remove list numbers
+
+    // Normalize whitespace
+    text = text.replace(/\s+/g, ' '); // Multiple spaces to single
+    text = text.replace(/\n{3,}/g, '\n\n'); // Max 2 newlines
+    text = text.trim();
+
+    // Remove common UI artifacts
+    text = text.replace(/^(Skip to content|Menu|Navigation|Share|Like|Comment|Subscribe)/gmi, '');
+
+    // Limit length to avoid token overload
+    const maxLength = 2000;
+    if (text.length > maxLength) {
+      text = text.slice(0, maxLength) + '...';
+    }
+
+    return text;
+  }
+
+  /**
+   * Check if element contains educational content
+   */
+  function isEducationalElement(element) {
+    if (!element) return false;
+
+    const tagName = element.tagName.toLowerCase();
+
+    // Exclude non-educational elements
+    const excludeTags = ['nav', 'header', 'footer', 'aside', 'button', 'input', 'select'];
+    if (excludeTags.includes(tagName)) return false;
+
+    // Exclude by role
+    const role = element.getAttribute('role');
+    const excludeRoles = ['navigation', 'banner', 'contentinfo', 'complementary', 'search'];
+    if (role && excludeRoles.includes(role)) return false;
+
+    // Exclude ads and navigation
+    const className = element.className || '';
+    const excludeClasses = ['ad', 'advertisement', 'nav', 'menu', 'sidebar', 'promo'];
+    if (excludeClasses.some(cls => className.toLowerCase().includes(cls))) return false;
+
+    // Include educational elements
+    const eduTags = ['p', 'article', 'section', 'main', 'li', 'figcaption', 'blockquote', 'dd', 'dt'];
+    return eduTags.includes(tagName);
+  }
+
+  /**
+   * Extract educational context around an element
+   */
+  function getEducationalContext(element, maxChars = 300) {
+    const context = [];
+
+    // Get parent context (for nested elements)
+    let parent = element.parentElement;
+    while (parent && context.join(' ').length < maxChars) {
+      const tag = parent.tagName.toLowerCase();
+      if (['article', 'section', 'main', 'figure'].includes(tag)) {
+        // Get heading if exists
+        const heading = parent.querySelector('h1, h2, h3, h4');
+        if (heading) {
+          context.unshift(heading.innerText.trim());
+        }
+        break;
+      }
+      parent = parent.parentElement;
+    }
+
+    // Get preceding sibling context
+    let prevSibling = element.previousElementSibling;
+    if (prevSibling && isEducationalElement(prevSibling)) {
+      const text = cleanTextForAI(prevSibling).slice(0, 150);
+      if (text.length > 20) {
+        context.push(text);
+      }
+    }
+
+    // Get following sibling context
+    let nextSibling = element.nextElementSibling;
+    if (nextSibling && isEducationalElement(nextSibling)) {
+      const text = cleanTextForAI(nextSibling).slice(0, 150);
+      if (text.length > 20) {
+        context.push(text);
+      }
+    }
+
+    return context.join(' ').slice(0, maxChars);
+  }
+
+  /**
+   * Extract alt text and captions from visual elements
+   */
+  function extractVisualMetadata(element) {
+    const metadata = {
+      alt: '',
+      caption: '',
+      title: '',
+      ariaLabel: ''
+    };
+
+    // Get alt text
+    metadata.alt = element.getAttribute('alt') || '';
+
+    // Get title
+    metadata.title = element.getAttribute('title') || '';
+
+    // Get aria-label
+    metadata.ariaLabel = element.getAttribute('aria-label') || '';
+
+    // Get caption (figcaption)
+    const figure = element.closest('figure');
+    if (figure) {
+      const figcaption = figure.querySelector('figcaption');
+      if (figcaption) {
+        metadata.caption = cleanTextForAI(figcaption);
+      }
+    }
+
+    // Look for caption in nearby elements
+    const nextSib = element.nextElementSibling;
+    if (nextSib && nextSib.classList.contains('caption')) {
+      metadata.caption = cleanTextForAI(nextSib);
+    }
+
+    return metadata;
+  }
+
+  // ===========================================
   // KEYBOARD SHORTCUTS
   // ===========================================
 
@@ -697,46 +838,168 @@
       diagrams: []
     };
 
-    // Detect quizzes and forms
-    const formElements = document.querySelectorAll('form, [role="form"], .quiz, .test, .assessment, .question, [data-quiz], [data-test]');
+    // ===========================================
+    // QUIZ DETECTION - Broad selectors for all sites
+    // ===========================================
+
+    // 1. Detect forms with radio/checkbox inputs (likely quizzes)
+    const formElements = document.querySelectorAll('form, [role="form"]');
     formElements.forEach(el => {
-      if (el.querySelectorAll('input[type="radio"], input[type="checkbox"], select').length > 0) {
-        results.quizzes.push(el);
-        el.classList.add('accessilens-quiz-detected');
+      if (el.querySelectorAll('input[type="radio"], input[type="checkbox"]').length > 0) {
+        if (!results.quizzes.includes(el)) {
+          results.quizzes.push(el);
+          el.classList.add('accessilens-quiz-detected');
+        }
       } else {
         results.forms.push(el);
       }
     });
 
-    // Detect multiple choice questions
-    const mcQuestions = document.querySelectorAll('.multiple-choice, .mcq, [data-question-type], .question-container');
-    mcQuestions.forEach(el => {
-      if (!results.quizzes.includes(el)) {
-        results.quizzes.push(el);
-        el.classList.add('accessilens-quiz-detected');
+    // 2. Detect quiz-like containers by class names (broad matching)
+    const quizSelectors = [
+      '.quiz', '.test', '.assessment', '.question', '.exam',
+      '[data-quiz]', '[data-test]', '[data-question]',
+      '.multiple-choice', '.mcq', '.question-container',
+      '[data-question-type]', '.answer-choice', '.quiz-container',
+      '.trivia', '.poll', '.survey',
+      // Common quiz platform selectors
+      '[class*="quiz"]', '[class*="question"]', '[class*="answer"]',
+      '[id*="quiz"]', '[id*="question"]',
+      // Fieldsets with legends (often used for quiz questions)
+      'fieldset:has(input[type="radio"])', 'fieldset:has(input[type="checkbox"])'
+    ].join(', ');
+
+    try {
+      const quizElements = document.querySelectorAll(quizSelectors);
+      quizElements.forEach(el => {
+        if (!results.quizzes.includes(el) && !el.closest('.accessilens-quiz-detected')) {
+          results.quizzes.push(el);
+          el.classList.add('accessilens-quiz-detected');
+        }
+      });
+    } catch (e) {
+      // Some selectors like :has() may not be supported in older browsers
+      console.log('AccessiLens: Some advanced quiz selectors not supported');
+    }
+
+    // 3. Find any container with multiple radio buttons (likely a quiz question)
+    const radioGroups = document.querySelectorAll('div, section, article, li');
+    radioGroups.forEach(el => {
+      const radioCount = el.querySelectorAll('input[type="radio"]').length;
+      if (radioCount >= 2 && radioCount <= 10 && !el.closest('.accessilens-quiz-detected')) {
+        // This looks like a quiz question with multiple choice answers
+        if (!results.quizzes.includes(el)) {
+          results.quizzes.push(el);
+          el.classList.add('accessilens-quiz-detected');
+        }
       }
     });
 
-    // Detect videos
-    const videoElements = document.querySelectorAll('video, iframe[src*="youtube"], iframe[src*="vimeo"], iframe[src*="embed"], .video-player, [data-video]');
+    // ===========================================
+    // VIDEO DETECTION - Broad selectors for all sites
+    // ===========================================
+
+    const videoSelectors = [
+      // Native HTML5 video
+      'video',
+      // YouTube (embedded and native)
+      'iframe[src*="youtube"]', 'iframe[src*="youtu.be"]',
+      '#movie_player', '.html5-video-player', '.ytp-player',
+      '[class*="youtube-player"]', '#player', '.video-stream',
+      // Vimeo
+      'iframe[src*="vimeo"]', '.vimeo-player',
+      // General video embeds
+      'iframe[src*="embed"]', 'iframe[src*="video"]', 'iframe[src*="player"]',
+      // Common video player classes
+      '.video-player', '.video-container', '.video-wrapper',
+      '[data-video]', '[data-video-id]', '[data-youtube]',
+      '[class*="video-player"]', '[class*="video-container"]',
+      '[id*="video-player"]', '[id*="player"]',
+      // Media players
+      '.jwplayer', '.video-js', '.plyr', '.mejs-container',
+      // Streaming platforms
+      'iframe[src*="twitch"]', 'iframe[src*="dailymotion"]',
+      'iframe[src*="wistia"]', 'iframe[src*="brightcove"]'
+    ].join(', ');
+
+    const videoElements = document.querySelectorAll(videoSelectors);
     videoElements.forEach(el => {
-      results.videos.push(el);
-      el.classList.add('accessilens-video-detected');
+      if (!results.videos.includes(el)) {
+        results.videos.push(el);
+        el.classList.add('accessilens-video-detected');
+      }
     });
 
-    // Detect animations (CSS and canvas)
+    // ===========================================
+    // ANIMATION DETECTION
+    // ===========================================
+
     const animatedElements = document.querySelectorAll('[class*="animate"], [class*="animation"], canvas, svg[class*="animated"], .lottie');
     animatedElements.forEach(el => {
       results.animations.push(el);
     });
 
-    // Detect diagrams and charts
+    // ===========================================
+    // DIAGRAM/CHART DETECTION
+    // ===========================================
+
     const diagramElements = document.querySelectorAll('svg, canvas, .chart, .diagram, .graph, [role="img"], figure img');
     diagramElements.forEach(el => {
       results.diagrams.push(el);
     });
 
+    console.log(`🔍 AccessiLens detected: ${results.videos.length} videos, ${results.quizzes.length} quizzes, ${results.diagrams.length} diagrams`);
     return results;
+  }
+
+  // Auto-detect and enhance content on page load
+  function autoDetectContent() {
+    console.log('🔍 AccessiLens: Auto-scanning for interactive content...');
+    const content = detectInteractiveContent();
+
+    if (content.videos.length > 0) {
+      enhanceVideos(content.videos);
+      console.log(`📹 AccessiLens: Enhanced ${content.videos.length} video(s)`);
+    }
+
+    if (content.quizzes.length > 0) {
+      enhanceQuizzes(content.quizzes);
+      console.log(`🎓 AccessiLens: Enhanced ${content.quizzes.length} quiz element(s)`);
+    }
+
+    // Show a subtle notification if content was found
+    if (content.videos.length > 0 || content.quizzes.length > 0) {
+      showContentNotification(content);
+    }
+  }
+
+  // Show a subtle notification when content is detected
+  function showContentNotification(content) {
+    const notification = document.createElement('div');
+    notification.className = 'accessilens-content-notification';
+    notification.innerHTML = `
+      <div class="accessilens-notif-icon">🔍</div>
+      <div class="accessilens-notif-text">
+        <strong>AccessiLens detected:</strong>
+        ${content.videos.length > 0 ? `📹 ${content.videos.length} video(s)` : ''}
+        ${content.quizzes.length > 0 ? `🎓 ${content.quizzes.length} quiz(es)` : ''}
+      </div>
+      <button class="accessilens-notif-close">×</button>
+    `;
+
+    notification.querySelector('.accessilens-notif-close').addEventListener('click', () => {
+      notification.remove();
+    });
+
+    document.body.appendChild(notification);
+
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+      }
+    }, 5000);
   }
 
   function enhanceQuizzes(quizzes) {
@@ -758,63 +1021,556 @@
       quiz.insertBefore(helper, quiz.firstChild);
     });
   }
+  // ===========================================
+  // EDUCATIONAL CONTENT ENHANCEMENTS
+  // Add these functions to content.js after enhanceQuizzes()
+  // ===========================================
+
+  // DIAGRAM & CHART ENHANCEMENT
+  function enhanceDiagrams(diagrams) {
+    diagrams.forEach(diagram => {
+      if (diagram.dataset.accessilensEnhanced) return;
+      diagram.dataset.accessilensEnhanced = 'true';
+
+      const helper = document.createElement('button');
+      helper.className = 'accessilens-diagram-helper';
+      helper.innerHTML = '🔍 Describe';
+      helper.title = 'Get AI description of this diagram/chart';
+      helper.addEventListener('click', () => {
+        describeDiagram(diagram);
+      });
+
+      const parent = diagram.parentElement;
+      if (parent && !parent.querySelector('.accessilens-diagram-helper')) {
+        const parentStyle = window.getComputedStyle(parent);
+        if (parentStyle.position === 'static') {
+          parent.style.position = 'relative';
+        }
+        parent.appendChild(helper);
+      }
+    });
+  }
+
+  async function describeDiagram(diagram) {
+    const metadata = extractVisualMetadata(diagram);
+    const context = getEducationalContext(diagram);
+
+    const parts = [];
+    if (metadata.alt) parts.push(`Alt text: ${metadata.alt}`);
+    if (metadata.caption) parts.push(`Caption: ${metadata.caption}`);
+    if (metadata.title) parts.push(`Title: ${metadata.title}`);
+    if (context) parts.push(`Context: ${context}`);
+
+    const diagramInfo = parts.length > 0
+      ? parts.join('\n')
+      : 'Visual element on an educational page.';
+
+    const prompt = `You are helping a student with learning difficulties understand this educational diagram/chart.
+
+${diagramInfo}
+
+Provide:
+1. What this diagram/chart shows
+2. Key elements and relationships
+3. What the student should learn
+4. Simple explanation of complex parts`;
+
+    showModal('Diagram Description', 'Analyzing...', '');
+
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: 'AI_REQUEST',
+        action: 'describeVisual',
+        text: prompt
+      });
+
+      if (!response.error) {
+        document.getElementById('accessilens-ai-content').innerHTML =
+          `<div style="white-space: pre-wrap;">${escapeHtml(response.result)}</div>`;
+        trackAIRequest('diagram', context.slice(0, 50) || 'diagram');
+      }
+    } catch (error) {
+      console.error('Diagram description error:', error);
+    }
+  }
+
+  // MATH EQUATION SUPPORT
+  function detectMathContent() {
+    const mathElements = [];
+
+    // MathML
+    document.querySelectorAll('math, .math, [class*="math"]').forEach(el =>
+      mathElements.push({ element: el, type: 'mathml' }));
+
+    // LaTeX patterns
+    document.querySelectorAll('p, li, dd, span, div').forEach(el => {
+      const text = el.textContent;
+      if (text.match(/\$.*\$|\\\(.*\\\)|\\frac|\\sqrt|=.*[+\-*/]/)) {
+        if (!el.closest('.accessilens-math-detected')) {
+          mathElements.push({ element: el, type: 'latex' });
+        }
+      }
+    });
+
+    return mathElements;
+  }
+
+  function enhanceMathEquations(mathElements) {
+    mathElements.forEach(({ element, type }) => {
+      if (element.dataset.accessilensEnhanced) return;
+      element.dataset.accessilensEnhanced = 'true';
+      element.classList.add('accessilens-math-detected');
+
+      const helper = document.createElement('button');
+      helper.className = 'accessilens-math-helper';
+      helper.innerHTML = '🔢';
+      helper.title = 'Explain this equation';
+      helper.addEventListener('click', () => explainMathEquation(element, type));
+
+      element.style.position = 'relative';
+      element.appendChild(helper);
+    });
+  }
+
+  async function explainMathEquation(element, type) {
+    const equationText = cleanTextForAI(element);
+    const context = getEducationalContext(element);
+
+    const prompt = `Explain this math equation step-by-step for a student with learning difficulties:
+
+Equation: ${equationText}
+Context: ${context || 'Educational lesson'}
+
+Provide:
+1. What the equation means simply
+2. Step-by-step solution
+3. What symbols mean
+4. Real-world example`;
+
+    showModal('Math Explanation', equationText, '');
+
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: 'AI_REQUEST',
+        action: 'stepByStep',
+        text: prompt
+      });
+
+      if (!response.error) {
+        document.getElementById('accessilens-ai-content').innerHTML =
+          `<div style="white-space: pre-wrap;">${escapeHtml(response.result)}</div>`;
+        trackAIRequest('math', equationText.slice(0, 50));
+      }
+    } catch (error) {
+      console.error('Math explanation error:', error);
+    }
+  }
+
+  // PROGRESS TRACKING
+  let sessionStartTime = Date.now();
+  let currentSessionData = {
+    url: window.location.href,
+    duration: 0,
+    aiRequests: [],
+    featuresUsed: new Set()
+  };
+
+  function trackAIRequest(type, topic) {
+    currentSessionData.aiRequests.push({
+      type,
+      topic: topic.slice(0, 100),
+      timestamp: Date.now()
+    });
+    saveSessionData();
+    updateStats('aiRequests');
+  }
+
+  function trackFeatureUse(feature) {
+    currentSessionData.featuresUsed.add(feature);
+    saveSessionData();
+    updateStats('featuresUsed');
+  }
+
+  function saveSessionData() {
+    currentSessionData.duration = Math.floor((Date.now() - sessionStartTime) / 1000);
+
+    chrome.storage.local.get(['sessions'], (result) => {
+      const sessions = result.sessions || [];
+      const sessionToSave = {
+        ...currentSessionData,
+        featuresUsed: Array.from(currentSessionData.featuresUsed),
+        timestamp: sessionStartTime
+      };
+
+      const existingIndex = sessions.findIndex(s =>
+        s.url === currentSessionData.url && s.timestamp === sessionStartTime);
+
+      if (existingIndex >= 0) {
+        sessions[existingIndex] = sessionToSave;
+      } else {
+        sessions.push(sessionToSave);
+        if (sessions.length > 50) sessions.shift();
+      }
+
+      chrome.storage.local.set({ sessions });
+    });
+  }
+
+  async function generateLearningInsights() {
+    return new Promise((resolve) => {
+      chrome.storage.local.get(['sessions'], (result) => {
+        const sessions = result.sessions || [];
+
+        if (sessions.length === 0) {
+          resolve({
+            totalSessions: 0,
+            totalTime: 0,
+            mostUsedFeature: 'None yet',
+            strugglingTopics: [],
+            aiRequestsByType: {}
+          });
+          return;
+        }
+
+        const insights = {
+          totalSessions: sessions.length,
+          totalTime: sessions.reduce((sum, s) => sum + s.duration, 0),
+          mostUsedFeature: 'None',
+          strugglingTopics: [],
+          aiRequestsByType: {}
+        };
+
+        // Most used feature
+        const featureCounts = {};
+        sessions.forEach(s =>
+          (s.featuresUsed || []).forEach(f => featureCounts[f] = (featureCounts[f] || 0) + 1));
+
+        let maxCount = 0;
+        Object.entries(featureCounts).forEach(([f, count]) => {
+          if (count > maxCount) {
+            maxCount = count;
+            insights.mostUsedFeature = f;
+          }
+        });
+
+        // AI requests by type
+        sessions.forEach(s => {
+          (s.aiRequests || []).forEach(req => {
+            insights.aiRequestsByType[req.type] = (insights.aiRequestsByType[req.type] || 0) + 1;
+
+            const topicCount = sessions.reduce((count, sess) =>
+              count + (sess.aiRequests || []).filter(r => r.topic === req.topic).length, 0);
+
+            if (topicCount >= 3 && !insights.strugglingTopics.includes(req.topic)) {
+              insights.strugglingTopics.push(req.topic);
+            }
+          });
+        });
+
+        resolve(insights);
+      });
+    });
+  }
+
+  async function showProgressDashboard() {
+    const insights = await generateLearningInsights();
+    const hours = Math.floor(insights.totalTime / 3600);
+    const minutes = Math.floor((insights.totalTime % 3600) / 60);
+    const timeStr = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+
+    const aiTypesHTML = Object.entries(insights.aiRequestsByType)
+      .map(([type, count]) => `<li><strong>${type}:</strong> ${count} times</li>`).join('');
+
+    const strugglingHTML = insights.strugglingTopics.length > 0
+      ? `<ul>${insights.strugglingTopics.slice(0, 5).map(t => `<li>${t}</li>`).join('')}</ul>`
+      : '<p>Great! No struggling topics detected.</p>';
+
+    showModal('📊 Learning Progress', '', `
+    <div style="padding: 16px;">
+      <h3>Your Learning Journey</h3>
+      <div style="background: #f3f4f6; padding: 12px; border-radius: 8px; margin: 16px 0;">
+        <strong>Study Time:</strong> ${timeStr} (${insights.totalSessions} sessions)<br>
+        <strong>Most Used:</strong> ${insights.mostUsedFeature}
+      </div>
+      <strong>AI Assistance:</strong>
+      <ul>${aiTypesHTML || '<li>No requests yet</li>'}</ul>
+      <strong>Topics Needing Help:</strong>
+      ${strugglingHTML}
+    </div>
+  `);
+  }
 
   function enhanceVideos(videos) {
     videos.forEach(video => {
       if (video.dataset.accessilensEnhanced) return;
       video.dataset.accessilensEnhanced = 'true';
 
-      // Create video control overlay
+      // Create floating video control buttons
       const overlay = document.createElement('div');
       overlay.className = 'accessilens-video-controls';
-      overlay.innerHTML = `
-        <button class="accessilens-video-btn" data-action="pause" title="Pause Video">⏸️</button>
-        <button class="accessilens-video-btn" data-action="slow" title="Slow Down">🐢</button>
-        <button class="accessilens-video-btn" data-action="transcript" title="Get Transcript">📝</button>
-        <button class="accessilens-video-btn" data-action="describe" title="Describe Content">👁️</button>
-      `;
+
+      // Different controls for HTML5 video vs iframe
+      const isHTML5Video = video.tagName === 'VIDEO';
+
+      if (isHTML5Video) {
+        // For HTML5 videos, we can control playback
+        overlay.innerHTML = `
+          <button class="accessilens-video-btn" data-action="slow" title="Toggle Slow Playback (0.5x/1x)">🐢</button>
+          <button class="accessilens-video-btn" data-action="transcript" title="Extract & Simplify Captions">�</button>
+        `;
+      } else {
+        // For iframes (YouTube, Vimeo, etc.), focus on transcript extraction
+        overlay.innerHTML = `
+          <button class="accessilens-video-btn" data-action="transcript" title="Extract Video Transcript/Captions">📝</button>
+          <button class="accessilens-video-btn" data-action="help" title="Accessibility Tips">❓</button>
+        `;
+      }
 
       overlay.querySelectorAll('.accessilens-video-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
+          e.preventDefault();
           e.stopPropagation();
           handleVideoAction(video, btn.dataset.action);
         });
       });
 
-      // Wrap video in container if needed
-      if (!video.parentElement.classList.contains('accessilens-video-wrapper')) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'accessilens-video-wrapper';
-        video.parentNode.insertBefore(wrapper, video);
-        wrapper.appendChild(video);
-        wrapper.appendChild(overlay);
+      // Position the overlay relative to the video WITHOUT wrapping it
+      const parent = video.parentElement;
+      if (parent && !parent.querySelector('.accessilens-video-controls')) {
+        const parentStyle = window.getComputedStyle(parent);
+        if (parentStyle.position === 'static') {
+          parent.style.position = 'relative';
+        }
+        parent.appendChild(overlay);
       }
     });
   }
 
-  function handleVideoAction(video, action) {
+  // Helper to escape HTML for display in modal
+  function escapeHtml(text) {
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function (m) { return map[m]; });
+  }
+
+  // Placeholder for showLoading - assuming it shows/hides a loading indicator
+  function showLoading() {
+    // Implement your loading indicator logic here
+    // For now, we'll just log it.
+    console.log('AccessiLens: Showing loading indicator...');
+    // A simple way to show a loading state in the modal might be:
+    // const modalContent = document.getElementById('accessilens-ai-content');
+    // if (modalContent) modalContent.innerHTML = '<div style="text-align: center; padding: 20px;">Loading...</div>';
+  }
+
+  // Try to extract YouTube transcript from the page
+  async function extractYouTubeTranscript() {
+    try {
+      // YouTube doesn't expose transcript directly, but we can try to find it
+      // Look for the transcript button and panel
+      const transcriptButton = document.querySelector('[aria-label*="transcript" i], [aria-label*="Show transcript" i]');
+
+      if (transcriptButton) {
+        // Click to open transcript panel if not already open
+        const panel = document.querySelector('ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-searchable-transcript"]');
+        if (!panel || !panel.hasAttribute('visibility')) {
+          transcriptButton.click();
+          // Wait for panel to load
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+
+        // Extract transcript segments
+        const segments = document.querySelectorAll('ytd-transcript-segment-renderer');
+        if (segments.length > 0) {
+          const transcriptText = Array.from(segments)
+            .map(seg => seg.querySelector('.segment-text')?.textContent?.trim())
+            .filter(Boolean)
+            .join(' ');
+
+          return transcriptText;
+        }
+      }
+
+      return null;
+    } catch (error) {
+      console.log('AccessiLens: Could not extract YouTube transcript:', error);
+      return null;
+    }
+  }
+
+  // Try to extract HTML5 video captions
+  function extractHTML5Captions(video) {
+    try {
+      const tracks = video.querySelectorAll('track[kind="captions"], track[kind="subtitles"]');
+      if (tracks.length === 0) return null;
+
+      // Get the first available track
+      const track = tracks[0];
+      const trackElement = video.textTracks[0];
+
+      if (trackElement && trackElement.cues) {
+        const captions = Array.from(trackElement.cues)
+          .map(cue => cue.text)
+          .join(' ');
+        return captions;
+      }
+
+      return null;
+    } catch (error) {
+      console.log('AccessiLens: Could not extract HTML5 captions:', error);
+      return null;
+    }
+  }
+
+  // Search for transcript text on the page
+  function findTranscriptOnPage() {
+    // Look for common transcript containers
+    const selectors = [
+      '[class*="transcript"]',
+      '[id*="transcript"]',
+      '[data-transcript]',
+      '.captions',
+      '.subtitles'
+    ];
+
+    for (const selector of selectors) {
+      const element = document.querySelector(selector);
+      if (element && element.textContent.length > 100) {
+        return element.textContent.trim();
+      }
+    }
+
+    return null;
+  }
+
+  async function handleVideoAction(video, action) {
+    const pageTitle = document.title;
+    const isYouTube = window.location.hostname.includes('youtube.com');
+    const isHTML5Video = video.tagName === 'VIDEO';
+
     switch (action) {
-      case 'pause':
-        if (video.tagName === 'VIDEO') {
-          if (video.paused) {
-            video.play();
-          } else {
-            video.pause();
-          }
-        }
-        break;
       case 'slow':
-        if (video.tagName === 'VIDEO') {
-          video.playbackRate = video.playbackRate === 1 ? 0.5 : 1;
+        if (isHTML5Video) {
+          const newRate = video.playbackRate === 1 ? 0.5 : 1;
+          video.playbackRate = newRate;
+          const rate = newRate === 1 ? 'Normal speed' : 'Half speed (0.5x)';
+          showModal('Playback Speed', 'Speed Changed',
+            `Video playback speed set to: ${rate}\n\nClick the button again to toggle.`);
         }
         break;
+
       case 'transcript':
-        const context = `Video on page: ${document.title}. Located at: ${video.closest('section,article,div')?.innerText?.slice(0, 500) || 'Unknown context'}`;
-        callAI('enhanceTranscript', context, 'Video Transcript');
+        showLoading();
+        showModal('Extracting Transcript', '', '');
+
+        let transcript = null;
+        let source = '';
+
+        // Try different methods to get transcript
+        if (isYouTube) {
+          transcript = await extractYouTubeTranscript();
+          source = 'YouTube captions';
+        } else if (isHTML5Video) {
+          transcript = extractHTML5Captions(video);
+          source = 'Video captions';
+        }
+
+        // Fallback: look for transcript on the page
+        if (!transcript) {
+          transcript = findTranscriptOnPage();
+          source = 'Page transcript';
+        }
+
+        if (transcript && transcript.length > 50) {
+          // We found a real transcript! Now simplify it
+          const simplifyPrompt = `Please simplify this video transcript to make it easier to understand for someone with learning difficulties:
+
+${transcript.slice(0, 3000)}
+
+Make it:
+- Use simpler words
+- Shorter sentences
+- Clear paragraph breaks
+- Highlight key concepts in **bold**
+
+Keep the main ideas but make it more accessible.`;
+
+          try {
+            const response = await chrome.runtime.sendMessage({
+              type: 'AI_REQUEST',
+              action: 'enhanceTranscript',
+              text: simplifyPrompt
+            });
+
+            if (response.error) {
+              // Show original transcript if AI fails
+              document.getElementById('accessilens-ai-content').innerHTML = `
+                <div><strong>Original Transcript (${source}):</strong></div>
+                <div style="white-space: pre-wrap; margin-top: 12px;">${escapeHtml(transcript.slice(0, 2000))}</div>
+                ${transcript.length > 2000 ? '<div style="margin-top: 8px; color: #666;">(Transcript truncated - showing first 2000 characters)</div>' : ''}
+              `;
+            } else {
+              document.getElementById('accessilens-ai-content').innerHTML = `
+                <div style="white-space: pre-wrap;">${escapeHtml(response.result)}</div>
+                <hr style="margin: 16px 0; border: none; border-top: 1px solid #e5e7eb;">
+                <div style="font-size: 12px; color: #666;">Source: ${source}</div>
+              `;
+            }
+          } catch (error) {
+            document.getElementById('accessilens-ai-content').innerHTML = `
+              <div><strong>Original Transcript (${source}):</strong></div>
+              <div style="white-space: pre-wrap; margin-top: 12px;">${escapeHtml(transcript.slice(0, 2000))}</div>
+            `;
+          }
+        } else {
+          // No transcript found
+          const videoTitle = video.getAttribute('title') ||
+            document.querySelector('h1')?.textContent?.trim() ||
+            pageTitle;
+
+          document.getElementById('accessilens-ai-content').innerHTML = `
+            <div style="color: #ef4444; margin-bottom: 16px;">
+              <strong>⚠️ No transcript available</strong>
+            </div>
+            <div style="margin-bottom: 12px;">
+              We couldn't find captions or a transcript for this video.
+            </div>
+            <div style="background: #f3f4f6; padding: 12px; border-radius: 8px; margin-top: 16px;">
+              <strong>Suggestions:</strong>
+              <ul style="margin: 8px 0; padding-left: 20px;">
+                ${isYouTube ? '<li>Try enabling YouTube captions (CC button on player)</li>' : ''}
+                <li>Search for: "${videoTitle} transcript" on Google</li>
+                <li>Search for: "${videoTitle} summary" for a written explanation</li>
+                <li>Check if the video has a description with key points</li>
+              </ul>
+            </div>
+          `;
+        }
         break;
-      case 'describe':
-        const description = `Video element on page titled "${document.title}". Surrounding content: ${video.closest('section,article,div')?.innerText?.slice(0, 500) || 'No surrounding text'}`;
-        callAI('describeVisual', description, 'Video Description');
+
+      case 'help':
+        showModal('Video Accessibility Help', 'Tips for This Video', `
+          <strong>Built-in Player Controls:</strong>
+          <ul style="margin: 8px 0; padding-left: 20px;">
+            <li><strong>Pause/Play:</strong> Click the video or press Spacebar</li>
+            <li><strong>Slow Down:</strong> Click settings (⚙️) → Playback speed → Choose 0.5x or 0.75x</li>
+            <li><strong>Captions:</strong> Click CC button to enable subtitles</li>
+            <li><strong>Skip:</strong> Press arrow keys to jump forward/backward</li>
+          </ul>
+          
+          <strong style="display: block; margin-top: 16px;">Accessibility Tips:</strong>
+          <ul style="margin: 8px 0; padding-left: 20px;">
+            <li>Watch in small segments - pause after each concept</li>
+            <li>Take notes of key points as you watch</li>
+            <li>Rewind and rewatch difficult sections</li>
+            <li>Use 0.75x speed if information is too fast</li>
+          </ul>
+        `);
         break;
     }
   }
@@ -1508,6 +2264,17 @@
     if ('speechSynthesis' in window) {
       window.speechSynthesis.getVoices();
     }
+
+    // AUTO-DETECT interactive content on page load
+    // Use a delay to wait for dynamic content to load
+    setTimeout(() => {
+      autoDetectContent();
+    }, 2000);
+
+    // Also detect when page becomes fully loaded (for SPAs)
+    window.addEventListener('load', () => {
+      setTimeout(autoDetectContent, 1000);
+    });
 
     console.log('🔍 AccessiLens initialized successfully!');
   }
