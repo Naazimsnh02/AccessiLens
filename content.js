@@ -206,6 +206,10 @@
         ${ICONS.speak}
         Speak
       </button>
+      <button class="accessilens-tooltip-btn" data-action="stop">
+        ${ICONS.close}
+        Stop
+      </button>
     `;
 
     tooltip.querySelectorAll('.accessilens-tooltip-btn').forEach(btn => {
@@ -440,6 +444,9 @@
         break;
       case 'speak':
         speakText(textToProcess);
+        break;
+      case 'stop':
+        stopSpeech();
         break;
     }
   }

@@ -235,8 +235,10 @@ function applyProfile(profileName) {
         toggleFeature(feature, enabled);
     });
 
-    // Update UI toggles
-    loadSettings();
+    // Wait for storage to complete, then update UI toggles
+    setTimeout(() => {
+        loadSettings();
+    }, 100);
 
     // Send to content script
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
